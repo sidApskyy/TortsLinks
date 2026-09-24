@@ -8,7 +8,7 @@ import { createIntakeDocImage } from "@/lib/paper-doc";
 import { playCrumpleSound } from "@/lib/crumple-sound";
 import { Turnstile } from "./turnstile";
 import { TrustedFormScript } from "./trusted-form";
-import PaperCrumple from "./paper-crumple";
+import { LetterSend } from "./letter-send";
 
 const initial: FormState = { ok: false };
 
@@ -18,19 +18,19 @@ const thanksPanel = {
     opacity: 1,
     scale: 1,
     transition: {
-      duration: 0.55,
+      duration: 0.4,
       ease: [0.22, 1, 0.36, 1] as const,
-      staggerChildren: 0.09,
-      delayChildren: 0.2,
+      staggerChildren: 0.07,
+      delayChildren: 0.08,
     },
   },
 };
 const thanksItem = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 14 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring" as const, stiffness: 210, damping: 22 },
+    transition: { type: "spring" as const, stiffness: 260, damping: 24 },
   },
 };
 const thanksCheck = {
@@ -38,32 +38,10 @@ const thanksCheck = {
   show: {
     opacity: 1,
     scale: 1,
-    transition: { type: "spring" as const, stiffness: 260, damping: 15 },
+    transition: { type: "spring" as const, stiffness: 320, damping: 16 },
   },
 };
-const ballVariants = {
-  full: {
-    opacity: 1,
-    scale: 1,
-    y: "0%",
-    rotate: 0,
-    transition: { duration: 0.3, ease: "easeOut" as const },
-  },
-  parked: {
-    opacity: 1,
-    scale: 0.45,
-    y: "32%",
-    rotate: -4,
-    transition: { type: "spring" as const, stiffness: 170, damping: 19 },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.35,
-    y: "135%",
-    rotate: -14,
-    transition: { duration: 0.7, ease: [0.55, 0, 1, 0.45] as const },
-  },
-};
+
 
 export function IntakeForm({
   id,
@@ -81,11 +59,10 @@ export function IntakeForm({
   const [localCampaign, setLocalCampaign] = useState(campaign);
   const formRef = useRef<HTMLFormElement>(null);
   const reduce = useReducedMotion();
-  const [phase, setPhase] = useState<"form" | "crumple" | "done">("form");
+  const [phase, setPhase] = useState<"form" | "send" | "done">("form");
   const [docSrc, setDocSrc] = useState("");
-  const [crumpled, setCrumpled] = useState(false);
-  const [midReveal, setMidReveal] = useState(false);
-  const [paperGone, setPaperGone] = useState(false);
+  const [sealed, setSealed] = useState(false);
+  const [letterGone, setLetterGone] = useState(false);
   const [submitted, setSubmitted] = useState({ name: "", campaign: "" });
 
   const selected = onCampaignChange ? campaign : localCampaign;
@@ -98,21 +75,14 @@ export function IntakeForm({
     if (!state.error) return;
     window.turnstile?.reset();
     setPhase("form");
-    setCrumpled(false);
-    setMidReveal(false);
-    setPaperGone(false);
+    setSealed(false);
+    setLetterGone(false);
     setDocSrc("");
   }, [state]);
 
   useEffect(() => {
-    if (state.ok && (crumpled || !docSrc)) setPhase("done");
-  }, [state.ok, crumpled, docSrc]);
-
-  useEffect(() => {
-    if (phase !== "crumple") return;
-    const t = window.setTimeout(() => setMidReveal(true), 650);
-    return () => window.clearTimeout(t);
-  }, [phase]);
+    if (state.ok && (sealed || !docSrc)) setPhase("done");
+  }, [state.ok, sealed, docSrc]);
 
   useEffect(() => {
     if (state.ok) onSubmitted?.();
@@ -141,19 +111,18 @@ export function IntakeForm({
         const src = createIntakeDocImage(doc);
         if (src) {
           setDocSrc(src);
-          setCrumpled(false);
-          setMidReveal(false);
-          setPaperGone(false);
-          setPhase("crumple");
+          setSealed(false);
+          setLetterGone(false);
+          setPhase("send");
           playCrumpleSound(1900);
         }
       } catch {
-        /* WebGL/canvas unavailable — fall through to the normal flow */
+        /* canvas unavailable — fall through to the normal flow */
       }
     }
   };
 
-  const thanksVisible = phase === "done" || midReveal;
+  const thanksVisible = phase === "done";
 
   return (
     <div id={id} className="relative scroll-mt-24">
@@ -166,7 +135,7 @@ export function IntakeForm({
           ref={formRef}
           action={formAction}
           onSubmit={handleFormSubmit}
-          className="rounded-2xl border border-white/10 bg-[#121212] p-6 shadow-2xl shadow-black/50 sm:p-10"
+          className="rounded-2xl border border-white/10 bg-[#121212] p-5 shadow-2xl shadow-black/50 sm:p-8"
         >
       <TrustedFormScript />
       <input type="hidden" name="ts" value={mountedAt} />
@@ -177,7 +146,7 @@ export function IntakeForm({
         </label>
       </div>
 
-      <h2 className="font-display text-2xl text-gradient sm:text-3xl">
+      <h2 className="font-display text-xl text-gradient sm:text-2xl">
         Check Whether You May Qualify
       </h2>
       <p className="mt-2 text-sm text-ink/70">
@@ -194,7 +163,7 @@ export function IntakeForm({
         <span className="rounded-full bg-accent/10 px-3 py-1">No obligation</span>
       </div>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="firstName" className="mb-1.5 block text-sm font-semibold">
             First name
@@ -273,14 +242,14 @@ export function IntakeForm({
           <textarea
             id="description"
             name="description"
-            rows={4}
+            rows={3}
             className="field resize-y"
             placeholder="Briefly describe what happened, your injuries, and when it occurred…"
           />
         </div>
       </div>
 
-      <div className="mt-6 flex items-start gap-3">
+      <div className="mt-5 flex items-start gap-3">
         <input
           id="consent"
           name="consent"
@@ -302,7 +271,7 @@ export function IntakeForm({
         </label>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
         <Turnstile />
       </div>
 
@@ -312,11 +281,11 @@ export function IntakeForm({
         </p>
       )}
 
-      <div className="mt-6 w-full">
+      <div className="mt-5 w-full">
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-xl bg-gradient-to-b from-[#e8dfc9] to-[#d8c9a3] px-6 py-4 text-[15px] font-bold tracking-wide text-black shadow-[0_8px_30px_rgba(216,201,163,0.25)] transition-all duration-200 hover:shadow-[0_8px_40px_rgba(216,201,163,0.4)] hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl bg-gradient-to-b from-[#e8dfc9] to-[#d8c9a3] px-6 py-3.5 text-[15px] font-bold tracking-wide text-black shadow-[0_8px_30px_rgba(216,201,163,0.25)] transition-all duration-200 hover:shadow-[0_8px_40px_rgba(216,201,163,0.4)] hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Submitting…" : "See If This May Fit →"}
         </button>
@@ -336,19 +305,19 @@ export function IntakeForm({
       </div>
 
       {phase !== "form" && (
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white/15 bg-[#121212]">
           <p className="sr-only" role="status">
             {state.ok
               ? "Your case review request has been submitted."
               : "Submitting your request."}
           </p>
 
-          {/* Thank-you panel revealed behind the crumpling paper */}
+          {/* Thank-you panel revealed behind the departing envelope */}
           <motion.div
             variants={thanksPanel}
             initial="hidden"
             animate={thanksVisible ? "show" : "hidden"}
-            className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-white/15 bg-[#121212] px-6 text-center shadow-2xl shadow-black/50 sm:px-12"
+            className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center sm:px-12"
           >
             <motion.div variants={thanksCheck} className="relative mb-5">
               <div className="absolute -inset-5 rounded-full bg-accent/15 blur-xl" aria-hidden="true" />
@@ -384,55 +353,17 @@ export function IntakeForm({
             </motion.p>
           </motion.div>
 
-          {/* The paper sheet — crumples, parks at the bottom, then drops away */}
-          {docSrc && !paperGone && (
-            <motion.div
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              variants={ballVariants}
-              animate={phase === "done" ? "exit" : crumpled ? "parked" : "full"}
-              onAnimationComplete={() => {
-                if (phase === "done") setPaperGone(true);
-              }}
-            >
-              <PaperCrumple
-                src={docSrc}
-                alt="Your submitted case review request"
-                width={360}
-                height={470}
-                imageFit="cover"
-                releaseBehavior="stay"
-                crumpleAmount={0.95}
-                crumpleDuration={0.7}
-                wrinkleDepth={1.2}
-                foldCount={11}
-                foldSharpness={0.7}
-                paperColor="#f5f1e8"
-                paperTexture={0.18}
-                roughness={0.95}
-                lightIntensity={2.2}
-                lightAngle={-25}
-                rotation={-2}
-                shadow
-                shadowOpacity={0.5}
-                draggable={false}
-                disabled
-                autoCrumple
-                seed={11}
-                detail={80}
-                onStateChange={(s) => {
-                  if (s === "crumpled") setCrumpled(true);
-                }}
-                onError={() => {
-                  setPaperGone(true);
-                  setDocSrc("");
-                }}
-                style={{ height: "100%" }}
-              />
-            </motion.div>
+          {/* The letter — folds, slides into the envelope, seals, flies off */}
+          {docSrc && !letterGone && (
+            <LetterSend
+              src={docSrc}
+              sent={phase === "done"}
+              onSealed={() => setSealed(true)}
+              onSent={() => setLetterGone(true)}
+            />
           )}
 
-          {phase === "crumple" && crumpled && !state.ok && (
+          {phase === "send" && sealed && !state.ok && (
             <p className="absolute inset-x-0 bottom-6 text-center text-xs uppercase tracking-widest text-ink/50">
               Submitting securely…
             </p>

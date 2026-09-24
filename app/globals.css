@@ -33,5 +33,5 @@ html {
 }
 
 .field {
-  @apply w-full rounded-lg border border-white/15 bg-white px-4 py-3 text-base text-[#0a0a0a] placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d8c9a3]/60 focus:ring-2 focus:ring-[#d8c9a3]/20;
+  @apply w-full rounded-lg border border-white/15 bg-white px-4 py-2.5 text-base text-[#0a0a0a] placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d8c9a3]/60 focus:ring-2 focus:ring-[#d8c9a3]/20;
 }
