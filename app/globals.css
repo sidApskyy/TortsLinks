@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #fafafa;
+  --color-accent: #d8c9a3;
+  --color-paper: #0a0a0a;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: rgba(216, 201, 163, 0.3);
+}
+
+.text-gradient {
+  background-image: linear-gradient(135deg, #ffffff 0%, #e8dfc9 45%, #9a8e6f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.field {
+  @apply w-full rounded-lg border border-white/15 bg-white px-4 py-3 text-base text-[#0a0a0a] placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d8c9a3]/60 focus:ring-2 focus:ring-[#d8c9a3]/20;
+}
