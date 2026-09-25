@@ -199,13 +199,21 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
   const [formInView, setFormInView] = useState(true);
   const [campaign, setCampaign] = useState(initialCampaign);
   const [cardH, setCardH] = useState(240);
+  const [coarse, setCoarse] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 479px)");
+    const cq = window.matchMedia("(pointer: coarse)");
     const apply = () => setCardH(mq.matches ? 264 : 240);
+    const applyCoarse = () => setCoarse(cq.matches);
     apply();
+    applyCoarse();
     mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
+    cq.addEventListener("change", applyCoarse);
+    return () => {
+      mq.removeEventListener("change", apply);
+      cq.removeEventListener("change", applyCoarse);
+    };
   }, []);
 
   useEffect(() => {
@@ -257,12 +265,12 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
           <LightRays
             raysOrigin="top-center"
             raysColor="#F0E8D4"
-            raysSpeed={prefersReducedMotion ? 0 : 0.9}
+            raysSpeed={prefersReducedMotion ? 0 : coarse ? 0.45 : 0.9}
             lightSpread={0.9}
             rayLength={1.8}
             fadeDistance={1.2}
             saturation={0}
-            followMouse={!prefersReducedMotion}
+            followMouse={!prefersReducedMotion && !coarse}
             mouseInfluence={0.08}
             noiseAmount={0.05}
             distortion={0.03}
@@ -296,7 +304,8 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <motion.img
-                  src="/models/lady-justice-gold.png"
+                  src="/models/lady-justice-gold.webp"
+                  fetchPriority="high"
                   alt=""
                   animate={prefersReducedMotion ? undefined : { y: [0, -12, 0] }}
                   transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
@@ -320,7 +329,7 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
               <motion.h1
                 {...fadeUp}
                 transition={{ ...fadeUp.transition, delay: 0.05 }}
-                className="mb-6 font-display text-4xl leading-[1.05] tracking-[-0.02em] text-gradient md:text-5xl lg:text-6xl"
+                className="mb-6 font-display text-[2rem] leading-[1.08] tracking-[-0.02em] text-gradient sm:text-4xl md:text-5xl lg:text-6xl"
               >
                 Find Out If Your Situation May Fit an{" "}
                 <span className="italic text-accent">Ongoing Case Review.</span>
@@ -357,6 +366,21 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
                   </motion.span>
                 ))}
               </motion.div>
+              <motion.button
+                {...fadeUp}
+                transition={{ ...fadeUp.transition, delay: 0.2 }}
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("victim-form")
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" })
+                }
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-[#e8dfc9] to-[#d8c9a3] px-7 py-3.5 text-[15px] font-bold tracking-wide text-black shadow-[0_8px_30px_rgba(216,201,163,0.25)] lg:hidden"
+              >
+                Start My Free Review
+                <ArrowRight className="h-4 w-4" />
+              </motion.button>
             </div>
 
             <motion.div
@@ -406,7 +430,7 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-80px" }}
-            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+            className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3"
           >
             {campaigns.map((c, index) => {
               const selected = campaign === c.label;
@@ -417,8 +441,14 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
                 pickCampaign(c.label, c.slug);
               };
               return (
-                <motion.div key={c.label} variants={item} className="h-full">
+                <motion.div
+                  key={c.label}
+                  variants={item}
+                  className="h-full w-[80%] max-w-[340px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink"
+                  style={{ contentVisibility: "auto", containIntrinsicSize: "auto 264px" }}
+                >
                   <FlipCard
+                    className="flip-card--free-scroll"
                     axis="y"
                     flipOnClick
                     draggable={false}
@@ -507,7 +537,14 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
                               background: selected ? "#ffffff" : `${tint}14`,
                             }}
                           >
-                            {selected ? "Selected" : "See if this may fit"}
+                            {selected ? (
+                              "Selected"
+                            ) : (
+                              <>
+                                <span className="max-[380px]:hidden">See if this may fit</span>
+                                <span className="hidden max-[380px]:inline">Check fit</span>
+                              </>
+                            )}
                             {selected ? (
                               <Check className="h-3.5 w-3.5" />
                             ) : (

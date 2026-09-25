@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CAMPAIGNS, OTHER_CAMPAIGN } from "@/lib/campaigns";
 import { submitLead, type FormState } from "@/lib/actions";
 import { createIntakeDocImage } from "@/lib/paper-doc";
@@ -115,6 +115,9 @@ export function IntakeForm({
           setLetterGone(false);
           setPhase("send");
           playCrumpleSound(1900);
+          document
+            .getElementById(id ?? "victim-form")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       } catch {
         /* canvas unavailable — fall through to the normal flow */
@@ -353,23 +356,36 @@ export function IntakeForm({
             </motion.p>
           </motion.div>
 
-          {/* The letter — folds, slides into the envelope, seals, flies off */}
-          {docSrc && !letterGone && (
+        </div>
+      )}
+
+      {/* Full-screen send-off — the letter always plays center-viewport,
+          regardless of where the user is scrolled inside the card */}
+      <AnimatePresence>
+        {phase !== "form" && docSrc && !letterGone && (
+          <motion.div
+            key="send-overlay"
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" aria-hidden />
             <LetterSend
               src={docSrc}
               sent={phase === "done"}
               onSealed={() => setSealed(true)}
               onSent={() => setLetterGone(true)}
             />
-          )}
-
-          {phase === "send" && sealed && !state.ok && (
-            <p className="absolute inset-x-0 bottom-6 text-center text-xs uppercase tracking-widest text-ink/50">
-              Submitting securely…
-            </p>
-          )}
-        </div>
-      )}
+            {phase === "send" && sealed && !state.ok && (
+              <p className="absolute inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] text-center text-xs uppercase tracking-widest text-ink/50">
+                Submitting securely…
+              </p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

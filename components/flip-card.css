@@ -27,6 +27,11 @@
   touch-action: pan-x;
 }
 
+/* Cards inside a horizontal snap strip must not block the swipe */
+.flip-card--free-scroll {
+  touch-action: pan-x pan-y;
+}
+
 .flip-card[data-draggable] {
   cursor: grab;
 }

@@ -13,7 +13,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-paper/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 md:h-16">
         <a href="/" className="flex items-center font-display text-2xl font-bold tracking-tight">
           Torts<span className="text-accent">Links</span>
         </a>
