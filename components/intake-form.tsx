@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CAMPAIGNS, OTHER_CAMPAIGN } from "@/lib/campaigns";
 import { submitLead, type FormState } from "@/lib/actions";
@@ -66,6 +67,7 @@ export function IntakeForm({
   const [submitted, setSubmitted] = useState({ name: "", campaign: "" });
 
   const selected = onCampaignChange ? campaign : localCampaign;
+  const errorRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     setMountedAt(Date.now());
@@ -78,6 +80,10 @@ export function IntakeForm({
     setSealed(false);
     setLetterGone(false);
     setDocSrc("");
+    // The form just reappeared — make sure the user actually sees why.
+    requestAnimationFrame(() =>
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+    );
   }, [state]);
 
   useEffect(() => {
@@ -279,7 +285,11 @@ export function IntakeForm({
       </div>
 
       {state.error && (
-        <p role="alert" className="mt-4 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <p
+          ref={errorRef}
+          role="alert"
+          className="mt-4 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-300"
+        >
           {state.error}
         </p>
       )}
@@ -359,33 +369,37 @@ export function IntakeForm({
         </div>
       )}
 
-      {/* Full-screen send-off — the letter always plays center-viewport,
-          regardless of where the user is scrolled inside the card */}
-      <AnimatePresence>
-        {phase !== "form" && docSrc && !letterGone && (
-          <motion.div
-            key="send-overlay"
-            className="fixed inset-0 z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" aria-hidden />
-            <LetterSend
-              src={docSrc}
-              sent={phase === "done"}
-              onSealed={() => setSealed(true)}
-              onSent={() => setLetterGone(true)}
-            />
-            {phase === "send" && sealed && !state.ok && (
-              <p className="absolute inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] text-center text-xs uppercase tracking-widest text-ink/50">
-                Submitting securely…
-              </p>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Full-screen send-off — portaled to <body> so ancestor transforms /
+          will-change can't trap the fixed overlay inside the card */}
+      {typeof document !== "undefined" &&
+        createPortal(
+        <AnimatePresence>
+          {phase !== "form" && docSrc && !letterGone && (
+            <motion.div
+              key="send-overlay"
+              className="fixed inset-0 z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" aria-hidden />
+              <LetterSend
+                src={docSrc}
+                sent={phase === "done"}
+                onSealed={() => setSealed(true)}
+                onSent={() => setLetterGone(true)}
+              />
+              {phase === "send" && sealed && !state.ok && (
+                <p className="absolute inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] text-center text-xs uppercase tracking-widest text-white/60">
+                  Submitting securely…
+                </p>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
