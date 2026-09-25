@@ -10,6 +10,7 @@ import { playCrumpleSound } from "@/lib/crumple-sound";
 import { Turnstile } from "./turnstile";
 import { TrustedFormScript } from "./trusted-form";
 import { LetterSend } from "./letter-send";
+import ArrowButton from "./arrow-button";
 
 const initial: FormState = { ok: false };
 
@@ -295,13 +296,12 @@ export function IntakeForm({
       )}
 
       <div className="mt-5 w-full">
-        <button
+        <ArrowButton
           type="submit"
           disabled={pending}
-          className="w-full rounded-xl bg-gradient-to-b from-[#e8dfc9] to-[#d8c9a3] px-6 py-3.5 text-[15px] font-bold tracking-wide text-black shadow-[0_8px_30px_rgba(216,201,163,0.25)] transition-all duration-200 hover:shadow-[0_8px_40px_rgba(216,201,163,0.4)] hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {pending ? "Submitting…" : "See If This May Fit →"}
-        </button>
+          text={pending ? "Submitting…" : "See If This May Fit"}
+          className="w-full"
+        />
       </div>
 
       <p className="mt-4 text-center text-xs leading-relaxed text-ink/50">

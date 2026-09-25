@@ -7,6 +7,8 @@ import {
   useReducedMotion,
   useScroll,
   useMotionValueEvent,
+  useMotionValue,
+  useMotionTemplate,
 } from "framer-motion";
 import { IntakeForm } from "@/components/intake-form";
 import LightRays from "@/components/light-rays";
@@ -247,6 +249,10 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
       : { opacity: 0, y: 28, scale: 0.95 },
     show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease } },
   };
+
+  const ctaX = useMotionValue(50);
+  const ctaY = useMotionValue(30);
+  const ctaSpot = useMotionTemplate`radial-gradient(420px circle at ${ctaX}% ${ctaY}%, rgba(216,201,163,0.4), transparent 70%)`;
 
   const pickCampaign = (label: string, slug: string) => {
     setCampaign(label);
@@ -621,37 +627,90 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
           >
             How a Review Works
           </motion.h2>
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((s, i) => (
-              <motion.div key={s.title} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.08 }} className="h-full">
-                <BorderGlow
-                  edgeSensitivity={30}
-                  glowColor={hexToHsl(s.tint)}
-                  backgroundColor="#161616"
-                  borderRadius={16}
-                  glowRadius={24}
-                  glowIntensity={0.7}
-                  coneSpread={25}
-                  fillOpacity={0.18}
-                  colors={[s.tint, s.tint, s.tint]}
+          <div className="relative">
+            {/* Connector rail — draws itself behind the step icons.
+                Vertical through the stack on mobile, horizontal across the row on desktop. */}
+            <motion.span
+              aria-hidden
+              className="absolute bottom-8 left-[46px] top-8 w-px origin-top bg-gradient-to-b from-accent/0 via-accent/50 to-accent/0 lg:hidden"
+              initial={prefersReducedMotion ? { scaleY: 1 } : { scaleY: 0 }}
+              whileInView={{ scaleY: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, ease }}
+            >
+              {!prefersReducedMotion && (
+                <motion.span
+                  className="absolute left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-accent shadow-[0_0_12px_#d8c9a3]"
+                  animate={{ top: ["0%", "96%"], opacity: [0, 1, 1, 0] }}
+                  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.9 }}
+                />
+              )}
+            </motion.span>
+            <motion.span
+              aria-hidden
+              className="absolute left-10 right-10 top-[46px] hidden h-px origin-left bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 lg:block"
+              initial={prefersReducedMotion ? { scaleX: 1 } : { scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, ease }}
+            >
+              {!prefersReducedMotion && (
+                <motion.span
+                  className="absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_12px_#d8c9a3]"
+                  animate={{ left: ["0%", "98%"], opacity: [0, 1, 1, 0] }}
+                  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.9 }}
+                />
+              )}
+            </motion.span>
+
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {steps.map((s, i) => (
+                <motion.div
+                  key={s.title}
+                  {...fadeUp}
+                  transition={{ ...fadeUp.transition, delay: i * 0.08 }}
+                  whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                   className="h-full"
                 >
-                  <div className="relative h-full p-6">
-                    <span className="absolute -top-3 right-5 rounded-full bg-white px-2.5 py-0.5 font-display text-xs font-bold text-black">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span
-                      className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl"
-                      style={{ background: `${s.tint}1F`, color: s.tint }}
-                    >
-                      <s.icon className="h-5 w-5" />
-                    </span>
-                    <h3 className="mb-2 font-semibold text-ink">{s.title}</h3>
-                    <p className="text-sm leading-relaxed text-ink/65">{s.copy}</p>
-                  </div>
-                </BorderGlow>
-              </motion.div>
-            ))}
+                  <BorderGlow
+                    edgeSensitivity={30}
+                    glowColor={hexToHsl(s.tint)}
+                    backgroundColor="#161616"
+                    borderRadius={16}
+                    glowRadius={24}
+                    glowIntensity={0.7}
+                    coneSpread={25}
+                    fillOpacity={0.18}
+                    colors={[s.tint, s.tint, s.tint]}
+                    className="h-full"
+                  >
+                    <div className="relative h-full p-6">
+                      <motion.span
+                        initial={prefersReducedMotion ? { scale: 1 } : { scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ type: "spring", stiffness: 320, damping: 14, delay: 0.35 + i * 0.1 }}
+                        className="absolute -top-3 right-5 rounded-full bg-white px-2.5 py-0.5 font-display text-xs font-bold text-black"
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </motion.span>
+                      <motion.span
+                        initial={prefersReducedMotion ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -30 }}
+                        whileInView={{ scale: 1, rotate: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.25 + i * 0.1 }}
+                        className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl"
+                        style={{ background: `${s.tint}1F`, color: s.tint }}
+                      >
+                        <s.icon className="h-5 w-5" />
+                      </motion.span>
+                      <h3 className="mb-2 font-semibold text-ink">{s.title}</h3>
+                      <p className="text-sm leading-relaxed text-ink/65">{s.copy}</p>
+                    </div>
+                  </BorderGlow>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -750,35 +809,72 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
       </section>
 
       {/* ── FINAL CTA ───────────────────────────────────── */}
-      <section className="border-t border-white/10 bg-ink py-16 text-center md:py-20">
-        <div className="mx-auto max-w-2xl px-5">
-          <motion.h2
-            {...fadeUp}
-            className="font-display text-3xl font-bold text-paper md:text-4xl"
-          >
-            Start with a free, confidential review.
-          </motion.h2>
+      <section
+        className="relative overflow-hidden border-t border-white/10 bg-ink py-16 text-center md:py-20"
+        onMouseMove={(e) => {
+          if (coarse) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          ctaX.set(((e.clientX - r.left) / r.width) * 100);
+          ctaY.set(((e.clientY - r.top) / r.height) * 100);
+        }}
+      >
+        {/* cursor spotlight — desktop only, fades with the gold sheen */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{ background: ctaSpot }}
+        />
+        <div className="relative mx-auto max-w-2xl px-5">
+          <h2 className="cta-shine font-display text-3xl font-bold md:text-4xl">
+            {"Start with a free, confidential review.".split(" ").map((w, i) => (
+              <motion.span
+                key={i}
+                className="inline-block"
+                initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 14, filter: "blur(6px)" }}
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 + i * 0.05, duration: 0.5, ease }}
+              >
+                {w}
+                {i < 5 ? "\u00A0" : ""}
+              </motion.span>
+            ))}
+          </h2>
           <motion.p
             {...fadeUp}
-            transition={{ ...fadeUp.transition, delay: 0.08 }}
+            transition={{ ...fadeUp.transition, delay: 0.35 }}
             className="mt-4 text-paper/60"
           >
             If your situation appears to match a current campaign, the next steps will be explained
             clearly. There is no cost and no obligation.
           </motion.p>
-          <motion.button
-            type="button"
-            onClick={() =>
-              document.getElementById("victim-form")?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-            whileHover={prefersReducedMotion ? undefined : { scale: 1.04 }}
-            whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-            transition={spring}
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#0A0A0A] px-8 py-4 font-semibold text-white"
+          <motion.div
+            {...fadeUp}
+            transition={{ ...fadeUp.transition, delay: 0.5 }}
+            className="relative mt-8 inline-flex"
           >
-            Check My Eligibility
-            <ArrowRight className="h-4 w-4" />
-          </motion.button>
+            {!prefersReducedMotion && (
+              <motion.span
+                aria-hidden
+                className="absolute -inset-1.5 rounded-2xl border-2 border-[#a5842f]/60"
+                animate={{ scale: [1, 1.12], opacity: [0.8, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
+              />
+            )}
+            <motion.button
+              type="button"
+              onClick={() =>
+                document.getElementById("victim-form")?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              whileHover={prefersReducedMotion ? undefined : { scale: 1.04 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+              transition={spring}
+              className="relative inline-flex items-center gap-2 rounded-xl bg-[#0A0A0A] px-8 py-4 font-semibold text-white"
+            >
+              Check My Eligibility
+              <ArrowRight className="h-4 w-4" />
+            </motion.button>
+          </motion.div>
         </div>
       </section>
 
