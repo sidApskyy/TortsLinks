@@ -1,6 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import BlinkingDots from "./blinking-dots";
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -43,6 +45,13 @@ const legalBlocks = [
 
 export function SiteFooter() {
   const reduce = useReducedMotion();
+  const footerRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: footerRef,
+    offset: ["start end", "end end"],
+  });
+  const watermarkY = useTransform(scrollYProgress, [0, 1], [70, 0]);
+  const watermarkOpacity = useTransform(scrollYProgress, [0, 0.4, 1], [0, 0.7, 1]);
 
   const rise = (delay = 0) =>
     reduce
@@ -55,7 +64,41 @@ export function SiteFooter() {
         };
 
   return (
-    <footer className="relative border-t border-white/10 bg-black text-white/70">
+    <footer ref={footerRef} className="relative overflow-hidden border-t border-white/10 bg-black text-white/70">
+      {/* Nebula clouds — champagne, violet, and a whisper of blue drifting
+          behind the starfield */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 left-[-12%] h-80 w-[44rem] max-w-[90vw] rounded-full"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(216,201,163,0.12), transparent 65%)",
+        }}
+        animate={reduce ? undefined : { x: [0, 40, 0], y: [0, 18, 0], opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute right-[-15%] top-1/3 h-96 w-[38rem] max-w-[90vw] rounded-full"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(96,82,168,0.14), transparent 65%)",
+        }}
+        animate={reduce ? undefined : { x: [0, -50, 0], y: [0, 24, 0], opacity: [0.5, 0.9, 0.5] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute bottom-[-10%] left-[30%] h-72 w-[34rem] max-w-[80vw] rounded-full"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(110,140,220,0.10), transparent 65%)",
+        }}
+        animate={reduce ? undefined : { x: [0, 30, 0], opacity: [0.4, 0.8, 0.4] }}
+        transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+      />
+      {/* galaxy starfield across the whole footer */}
+      <BlinkingDots />
       {/* Accent hairline draws itself across the top */}
       <motion.span
         aria-hidden
@@ -66,7 +109,7 @@ export function SiteFooter() {
         transition={{ duration: 1.2, ease }}
       />
 
-      <div className="mx-auto max-w-6xl px-5 pt-12 pb-28 lg:pb-12">
+      <div className="relative mx-auto max-w-6xl px-5 pt-12 pb-28 lg:pb-12">
         <div className="grid gap-10 md:grid-cols-4">
           <motion.div {...rise(0)} className="md:col-span-2">
             <a href="/" className="font-display text-2xl font-bold tracking-tight text-white">
@@ -134,7 +177,32 @@ export function SiteFooter() {
         </div>
 
         <motion.p {...rise(0.1)} className="mt-8 text-sm text-white/40">
-          © {new Date().getFullYear()} The Torts Attorney. All rights reserved.
+          © {new Date().getFullYear()} TortsLinks. All rights reserved.{" "}
+          <span className="text-white/25">|</span> Developed by{" "}
+          <a
+            href="https://www.rdcsgenix.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-link text-white/60 hover:text-accent"
+          >
+            RDCS Genix
+          </a>
+        </motion.p>
+      </div>
+
+      {/* Giant ghost wordmark — rises with scroll, gold sheen sweeps occasionally */}
+      <div aria-hidden className="pointer-events-none relative select-none overflow-hidden">
+        <motion.p
+          className="footer-watermark mt-2 text-center font-display text-[17vw] font-bold leading-[0.9] tracking-tight md:text-[11rem]"
+          style={reduce ? undefined : { y: watermarkY, opacity: watermarkOpacity }}
+        >
+          TortsLinks
+        </motion.p>
+        <motion.p
+          className="footer-watermark-sheen absolute inset-0 mt-2 text-center font-display text-[17vw] font-bold leading-[0.9] tracking-tight md:text-[11rem]"
+          style={reduce ? undefined : { y: watermarkY }}
+        >
+          TortsLinks
         </motion.p>
       </div>
     </footer>

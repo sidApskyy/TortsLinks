@@ -11,6 +11,7 @@ import { Turnstile } from "./turnstile";
 import { TrustedFormScript } from "./trusted-form";
 import { LetterSend } from "./letter-send";
 import ArrowButton from "./arrow-button";
+import BlinkingDots from "./blinking-dots";
 
 const initial: FormState = { ok: false };
 
@@ -145,8 +146,17 @@ export function IntakeForm({
           ref={formRef}
           action={formAction}
           onSubmit={handleFormSubmit}
-          className="rounded-2xl border border-white/10 bg-[#121212] p-5 shadow-2xl shadow-black/50 sm:p-8"
+          className="relative isolate overflow-hidden rounded-2xl border border-white/10 bg-[#121212] p-5 shadow-2xl shadow-black/50 sm:p-8"
         >
+      <BlinkingDots spacing={28} meteors={false} className="-z-10 opacity-80" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-16 -z-10 h-56 w-56 rounded-full bg-[#6052a8]/15 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 -left-16 -z-10 h-64 w-64 rounded-full bg-accent/10 blur-3xl"
+      />
       <TrustedFormScript />
       <input type="hidden" name="ts" value={mountedAt} />
       <div className="honeypot" aria-hidden="true">

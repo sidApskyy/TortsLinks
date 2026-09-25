@@ -94,6 +94,46 @@ html {
   }
 }
 
+/* Giant ghost watermark — fades into the page floor */
+.footer-watermark {
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.05) 60%,
+    transparent
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.footer-watermark-sheen {
+  background-image: linear-gradient(
+    110deg,
+    transparent 40%,
+    rgba(216, 201, 163, 0.28) 50%,
+    transparent 60%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: footer-watermark-sheen 7s ease-in-out infinite;
+}
+@keyframes footer-watermark-sheen {
+  0%, 30% {
+    background-position: 115% 0;
+  }
+  70%, 100% {
+    background-position: -15% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-watermark-sheen {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 .honeypot {
   position: absolute;
   left: -9999px;

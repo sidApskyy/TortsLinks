@@ -18,7 +18,6 @@ import { CAMPAIGNS, OTHER_CAMPAIGN } from "@/lib/campaigns";
 import {
   ArrowRight,
   Check,
-  ChevronDown,
   Clock,
   FileText,
   Lock,
@@ -760,34 +759,99 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
       {/* ── FAQ ─────────────────────────────────────────── */}
       <section id="faq" className="scroll-mt-20 border-t border-white/10 py-16 md:py-24">
         <div className="mx-auto max-w-2xl px-5 sm:px-6">
-          <motion.h2
+          <motion.span
             {...fadeUp}
-            className="mb-10 text-center font-display text-3xl text-gradient md:text-4xl"
+            className="mb-4 block text-center text-sm font-semibold uppercase tracking-[0.15em] text-accent"
           >
-            Common Questions
-          </motion.h2>
+            Straight Answers
+          </motion.span>
+          <h2 className="mb-10 text-center font-display text-3xl text-gradient md:text-4xl">
+            {"Common Questions".split(" ").map((w, i) => (
+              <motion.span
+                key={i}
+                className="inline-block"
+                initial={
+                  prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 14, filter: "blur(6px)" }
+                }
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.05 + i * 0.06, duration: 0.5, ease }}
+              >
+                {w}
+                {i === 0 ? "\u00A0" : ""}
+              </motion.span>
+            ))}
+          </h2>
           <div className="space-y-3">
             {faqs.map((f, i) => {
               const open = openFaq === i;
               return (
                 <motion.div
                   key={f.q}
-                  {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: i * 0.05 }}
-                  className={`overflow-hidden rounded-xl border bg-[#161616] transition-colors duration-300 ${
-                    open ? "border-white/30" : "border-white/10"
+                  initial={
+                    prefersReducedMotion
+                      ? { opacity: 1, y: 0, scale: 1 }
+                      : { opacity: 0, y: 20, scale: 0.98 }
+                  }
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 24,
+                    delay: i * 0.05,
+                  }}
+                  className={`relative overflow-hidden rounded-xl border bg-[#161616] transition-colors duration-300 ${
+                    open ? "border-accent/40" : "border-white/10"
                   }`}
                 >
+                  {/* ambient gold wash when open */}
+                  <motion.div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(500px circle at 0% 0%, rgba(216,201,163,0.07), transparent 60%)",
+                    }}
+                    initial={false}
+                    animate={{ opacity: open ? 1 : 0 }}
+                    transition={{ duration: 0.4 }}
+                  />
+                  {/* accent bar draws itself down the open row */}
+                  <motion.span
+                    aria-hidden
+                    className="absolute bottom-3 left-0 top-3 w-0.5 origin-top rounded-full bg-accent/70"
+                    initial={false}
+                    animate={{ scaleY: open ? 1 : 0, opacity: open ? 1 : 0 }}
+                    transition={{ duration: 0.35, ease }}
+                  />
                   <button
                     type="button"
                     onClick={() => setOpenFaq(open ? null : i)}
                     aria-expanded={open}
-                    className="flex w-full items-center justify-between px-5 py-4 text-left font-semibold text-ink"
+                    className="group relative flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-ink transition-colors duration-300"
                   >
-                    {f.q}
-                    <ChevronDown
-                      className={`ml-4 h-4 w-4 shrink-0 text-accent transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-                    />
+                    <span className="transition-colors duration-300 group-hover:text-accent">
+                      {f.q}
+                    </span>
+                    {/* plus → minus morph */}
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors duration-300 ${
+                        open
+                          ? "border-accent/50 bg-accent/15 text-accent"
+                          : "border-white/15 text-ink/60 group-hover:border-accent/40 group-hover:text-accent"
+                      }`}
+                    >
+                      <span className="relative block h-3 w-3">
+                        <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-current" />
+                        <motion.span
+                          className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-current"
+                          initial={false}
+                          animate={{ scaleY: open ? 0 : 1, rotate: open ? 90 : 0 }}
+                          transition={{ duration: 0.3, ease }}
+                        />
+                      </span>
+                    </span>
                   </button>
                   <AnimatePresence initial={false}>
                     {open && (
@@ -795,9 +859,17 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease }}
+                        transition={{ duration: 0.32, ease }}
                       >
-                        <p className="px-5 pb-5 text-sm leading-relaxed text-ink/70">{f.a}</p>
+                        <motion.p
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ delay: 0.08, duration: 0.28, ease }}
+                          className="px-5 pb-5 pl-6 text-sm leading-relaxed text-ink/70"
+                        >
+                          {f.a}
+                        </motion.p>
                       </motion.div>
                     )}
                   </AnimatePresence>
