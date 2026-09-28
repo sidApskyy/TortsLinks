@@ -1,6 +1,6 @@
-# Torts Link
+# TortLinks
 
-Standalone victim-intake lander for The Torts Attorney, served at tortslink.com.
+Standalone victim-intake lander for TortLinks, served at tortslink.com.
 Separate from thetortsattorney.com — noindex, no links between the two.
 
 ## Stack

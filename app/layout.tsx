@@ -12,16 +12,16 @@ const instrument = Instrument_Serif({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tortslink.com"),
-  title: "Free Case Review | TortsLinks",
+  title: "Free Case Review | TortLinks",
   description:
     "See if you may qualify for compensation. Free, confidential case review — takes about 2 minutes.",
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
   icons: { icon: [{ url: "/TTA_2@4x.webp", type: "image/webp" }] },
   openGraph: {
-    title: "Free Case Review | TortsLinks",
+    title: "Free Case Review | TortLinks",
     description:
       "See if you may qualify for compensation. Free, confidential case review — takes about 2 minutes.",
-    siteName: "TortsLinks",
+    siteName: "TortLinks",
     type: "website",
     images: [{ url: "/TTA_2@4x.webp" }],
   },

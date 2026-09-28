@@ -166,7 +166,7 @@ const benefits = [
 
 const faqs = [
   {
-    q: "Is TortsLinks a law firm?",
+    q: "Is TortLinks a law firm?",
     a: "No. We provide legal marketing and case-acquisition services for plaintiff law firms. We are not a law firm and do not provide legal advice or legal representation.",
   },
   {

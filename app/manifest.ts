@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "The Torts Attorney — Free Case Review",
-    short_name: "Torts Link",
+    name: "TortLinks — Free Case Review",
+    short_name: "TortLinks",
     description: "Free, confidential case review.",
     start_url: "/",
     display: "standalone",

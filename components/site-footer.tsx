@@ -174,7 +174,7 @@ export function SiteFooter() {
         </div>
 
         <motion.p {...rise(0.1)} className="mt-8 text-sm text-white/40">
-          © {new Date().getFullYear()} TortsLinks. All rights reserved.{" "}
+          © {new Date().getFullYear()} TortLinks. All rights reserved.{" "}
           <span className="text-white/25">|</span> Developed by{" "}
           <a
             href="https://www.rdcsgenix.com/"
@@ -193,13 +193,13 @@ export function SiteFooter() {
           className="footer-watermark mt-2 text-center font-display text-[17vw] font-bold leading-[0.9] tracking-tight md:text-[11rem]"
           style={reduce ? undefined : { y: watermarkY, opacity: watermarkOpacity }}
         >
-          TortsLinks
+          TortLinks
         </motion.p>
         <motion.p
           className="footer-watermark-sheen absolute inset-0 mt-2 text-center font-display text-[17vw] font-bold leading-[0.9] tracking-tight md:text-[11rem]"
           style={reduce ? undefined : { y: watermarkY }}
         >
-          TortsLinks
+          TortLinks
         </motion.p>
       </div>
     </footer>

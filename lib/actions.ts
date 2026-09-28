@@ -42,7 +42,7 @@ async function claimTrustedForm(certUrl: string, email: string): Promise<void> {
       body: JSON.stringify({
         cert: { url: certUrl },
         reference: `lander-lead:${email}`,
-        vendor: "The Torts Attorney",
+        vendor: "TortLinks",
       }),
     });
   } catch (err) {
@@ -116,7 +116,7 @@ export async function submitLead(_prev: FormState, formData: FormData): Promise<
       <h2>We received your request</h2>
       <p>Hi ${e(lead.firstName)},</p>
       <p>We received your request regarding <strong>${e(lead.campaign)}</strong>. Our team will review your information and reach out if you may qualify. There is no cost and no obligation.</p>
-      <p style="color:#666;font-size:13px">The Torts Attorney &mdash; attorney advertising. This is not a guarantee of outcome.</p>
+      <p style="color:#666;font-size:13px">TortLinks &mdash; attorney advertising. This is not a guarantee of outcome.</p>
     </div>`;
 
   const notifyTo = process.env.CONTACT_NOTIFICATION_EMAIL;

@@ -11,7 +11,7 @@ export function SiteLogo({
     <a
       href="/"
       className={`group ${className ?? ""}`}
-      aria-label="TortsLinks home"
+      aria-label="TortLinks home"
     >
       <span
         className={`font-display text-2xl font-bold tracking-tight ${
@@ -19,7 +19,7 @@ export function SiteLogo({
         }`}
       >
         <span className={sheen ? "" : "text-white transition-colors group-hover:text-accent"}>
-          Torts
+          Tort
         </span>
         <span className="text-accent">Links</span>
       </span>

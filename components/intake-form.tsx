@@ -272,7 +272,7 @@ export function IntakeForm({
           <span data-tf-element-role="consent-language">
             By checking the box, you agree to be contacted about your potential case or promotional
             legal offers sent by or on behalf of{" "}
-            <strong className="font-semibold text-accent">Torts Links</strong> and/or
+            <strong className="font-semibold text-accent">TortLinks</strong> and/or
             participating law firms. You may receive live calls, automated calls, emails or text
             messages even if you are on a national or state &ldquo;Do Not Call&rdquo; list. This
             includes contact even if you are on a Do Not Call registry. Consent is not a condition
@@ -309,7 +309,7 @@ export function IntakeForm({
         with this form.
       </p>
       <p className="mt-3 text-center text-[11px] leading-relaxed text-ink/45">
-        Attorney advertising. TortsLinks provides legal marketing and case-acquisition
+        Attorney advertising. TortLinks provides legal marketing and case-acquisition
         services and is not a law firm. Submitting this form does not create an attorney-client
         relationship and does not guarantee review, acceptance, or any outcome. Prior results do not
         guarantee similar outcomes.

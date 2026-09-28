@@ -82,7 +82,7 @@ export function createIntakeDocImage(d: IntakeDocData): string {
   ctx.fillStyle = INK;
   ctx.font = "700 22px Georgia, 'Times New Roman', serif";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("TortsLinks", M, y);
+  ctx.fillText("TortLinks", M, y);
   ctx.font = "600 10px Arial, sans-serif";
   ctx.fillStyle = FAINT;
   ctx.textAlign = "right";
