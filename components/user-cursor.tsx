@@ -1,26 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 
 export default function UserCursor() {
-  const [pos, setPos] = useState({ x: -100, y: -100 });
+  const reduce = useReducedMotion();
+  const fine = typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
   const [visible, setVisible] = useState(false);
-  const [fine, setFine] = useState(false);
-  const [label, setLabel] = useState("Your name");
-  const reduce =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [label, setLabel] = useState("");
 
-  // enable only on real pointer devices
-  useEffect(() => {
-    setFine(window.matchMedia("(pointer: fine)").matches);
-  }, []);
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const springX = useSpring(x, { stiffness: 900, damping: 28, mass: 0.08 });
+  const springY = useSpring(y, { stiffness: 900, damping: 28, mass: 0.08 });
 
-  // read the first-name field live, if it exists
+  // read the first-name field live; only show the tag once it has a value
   useEffect(() => {
     const input = document.getElementById("firstName") as HTMLInputElement | null;
     if (!input) return;
-    const update = () => setLabel((input.value || "").trim() || "Your name");
+    const update = () => setLabel((input.value || "").trim());
     update();
     input.addEventListener("input", update);
     return () => input.removeEventListener("input", update);
@@ -31,7 +29,8 @@ export default function UserCursor() {
     if (!fine) return;
 
     const move = (e: MouseEvent) => {
-      setPos({ x: e.clientX, y: e.clientY });
+      x.set(e.clientX);
+      y.set(e.clientY);
       setVisible(true);
     };
     const leave = () => setVisible(false);
@@ -43,18 +42,15 @@ export default function UserCursor() {
       window.removeEventListener("mousemove", move);
       window.removeEventListener("mouseleave", leave);
     };
-  }, [fine]);
+  }, [fine, x, y]);
 
   if (!fine || !visible) return null;
 
   return (
-    <div
+    <motion.div
       aria-hidden="true"
       className="pointer-events-none fixed left-0 top-0 z-[100] will-change-transform"
-      style={{
-        transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
-        transition: reduce ? undefined : "transform 45ms linear",
-      }}
+      style={{ x: reduce ? x : springX, y: reduce ? y : springY }}
     >
       {/* pointer */}
       <svg
@@ -73,10 +69,12 @@ export default function UserCursor() {
           strokeLinejoin="round"
         />
       </svg>
-      {/* name tag */}
-      <div className="absolute left-5 top-4 whitespace-nowrap rounded-full border border-accent/40 bg-[#121210]/90 px-2.5 py-1 text-[11px] font-semibold text-accent shadow-lg backdrop-blur-sm">
-        {label}
-      </div>
-    </div>
+      {/* name tag — only appears once the victim has started typing */}
+      {label ? (
+        <div className="absolute left-5 top-4 whitespace-nowrap rounded-full border border-accent/40 bg-[#121210]/90 px-2.5 py-1 text-[11px] font-semibold text-accent shadow-lg backdrop-blur-sm">
+          {label}
+        </div>
+      ) : null}
+    </motion.div>
   );
 }
