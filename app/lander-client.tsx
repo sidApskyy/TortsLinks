@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   motion,
   AnimatePresence,
@@ -202,6 +202,9 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
   const [campaign, setCampaign] = useState(initialCampaign);
   const [cardH, setCardH] = useState(240);
   const [coarse, setCoarse] = useState(false);
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+  const campaignContainerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 479px)");
@@ -230,6 +233,35 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
   }, []);
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolledPast(y > 480));
+
+  // Track the campaign card most in view on mobile for an active-state glow.
+  useEffect(() => {
+    const isMobile = () => window.innerWidth < 640;
+    const container = campaignContainerRef.current;
+    if (!isMobile() || !container) return;
+
+    const cards = cardRefs.current.filter((el): el is HTMLDivElement => el !== null);
+    if (cards.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let best: { index: number; ratio: number } | null = null;
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const idx = Number((entry.target as HTMLDivElement).dataset.index);
+            if (!best || entry.intersectionRatio > best.ratio) {
+              best = { index: idx, ratio: entry.intersectionRatio };
+            }
+          }
+        }
+        if (best) setActiveCard(best.index);
+      },
+      { root: container, threshold: 0.6 }
+    );
+
+    cards.forEach((c) => observer.observe(c));
+    return () => observer.disconnect();
+  }, []);
 
   const fadeUp = {
     initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 },
@@ -432,6 +464,7 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
             information may be shared with a participating law firm for follow-up.
           </motion.p>
           <motion.div
+            ref={campaignContainerRef}
             variants={container}
             initial="hidden"
             whileInView="show"
@@ -449,9 +482,16 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
               return (
                 <motion.div
                   key={c.label}
+                  ref={(el) => { cardRefs.current[index] = el as unknown as HTMLDivElement; }}
+                  data-index={index}
+                  data-active={activeCard === index ? "true" : undefined}
                   variants={item}
-                  className="h-full w-[80%] max-w-[340px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink"
-                  style={{ contentVisibility: "auto", containIntrinsicSize: "auto 264px" }}
+                  className="h-full w-[80%] max-w-[340px] shrink-0 snap-start rounded-2xl transition-shadow duration-300 sm:w-auto sm:max-w-none sm:shrink"
+                  style={{
+                    contentVisibility: "auto",
+                    containIntrinsicSize: "auto 264px",
+                    boxShadow: activeCard === index ? `0 0 0 2px ${tint}99, 0 0 30px -4px ${tint}99` : undefined,
+                  }}
                 >
                   <FlipCard
                     className="flip-card--free-scroll"
@@ -963,7 +1003,12 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
             transition={{ duration: 0.3, ease }}
             className="fixed inset-x-0 bottom-0 z-40 block lg:hidden"
           >
-            <div className="flex items-center justify-between gap-3 border-t border-white/15 bg-[#0A0A0A]/95 px-5 pb-[max(env(safe-area-inset-bottom),0.875rem)] pt-3.5">
+            <div className="relative flex items-center justify-between gap-3 overflow-hidden border-t border-accent/20 bg-[#0A0A0A]/90 px-5 pb-[max(env(safe-area-inset-bottom),0.875rem)] pt-3.5 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-lg">
+              {/* Subtle top sheen */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent"
+              />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">Free case review</p>
                 <p className="text-xs text-white/55">Confidential · ~2 minutes</p>
@@ -973,7 +1018,7 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
                 onClick={() =>
                   document.getElementById("victim-form")?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-black"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#e8dfc9] to-[#d8c9a3] px-4 py-2.5 text-xs font-semibold text-black shadow-lg"
               >
                 Start Review
                 <ArrowRight className="h-3.5 w-3.5" />
