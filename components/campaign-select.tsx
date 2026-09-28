@@ -22,17 +22,49 @@ export function CampaignSelect({
   onChange,
 }: CampaignSelectProps) {
   const [open, setOpen] = useState(false);
-  const [highlight, setHighlight] = useState(0);
+  const [query, setQuery] = useState("");
+  const [highlight, setHighlight] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const all = [placeholder, ...options];
-  const currentIndex = Math.max(0, options.findIndex((o) => o === value) + 1);
+  const visible = options.filter((o) => o.toLowerCase().includes(query.toLowerCase()));
+
+  const selectIndex = (i: number) => {
+    const opt = visible[i];
+    if (!opt) return;
+    onChange(opt);
+    setOpen(false);
+    setQuery("");
+    triggerRef.current?.focus();
+  };
+
+  const scrollTo = (i: number) => {
+    const item = listRef.current?.querySelector(`[data-index="${i}"]`) as HTMLElement | null;
+    item?.scrollIntoView({ block: "nearest" });
+  };
+
+  const moveHighlight = (next: number) => {
+    const clamped = Math.max(0, Math.min(visible.length - 1, next));
+    setHighlight(clamped);
+    scrollTo(clamped);
+  };
 
   useEffect(() => {
-    if (open) setHighlight(currentIndex);
-  }, [open, currentIndex]);
+    if (open) {
+      setQuery("");
+      inputRef.current?.focus();
+    } else {
+      setHighlight(-1);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const selectedIndex = visible.findIndex((o) => o === value);
+    setHighlight(selectedIndex >= 0 ? selectedIndex : visible.length > 0 ? 0 : -1);
+  }, [query, open, value, visible.length]); // keep highlight sane while filtering
 
   // click outside to close
   useEffect(() => {
@@ -44,19 +76,7 @@ export function CampaignSelect({
     return () => document.removeEventListener("mousedown", close);
   }, [open]);
 
-  const selectIndex = (i: number) => {
-    if (i === 0) return;
-    onChange(options[i - 1]);
-    setOpen(false);
-    triggerRef.current?.focus();
-  };
-
-  const scrollTo = (i: number) => {
-    const item = listRef.current?.querySelector(`[data-index="${i}"]`) as HTMLElement | null;
-    item?.scrollIntoView({ block: "nearest" });
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
+  const onTriggerKeyDown = (e: React.KeyboardEvent) => {
     if (!open) {
       if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
         e.preventDefault();
@@ -64,39 +84,45 @@ export function CampaignSelect({
       }
       return;
     }
+  };
 
-    let next = highlight;
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        next = Math.min(all.length - 1, highlight + 1);
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        next = Math.max(0, highlight - 1);
-        break;
-      case "Home":
-        e.preventDefault();
-        next = 0;
-        break;
-      case "End":
-        e.preventDefault();
-        next = all.length - 1;
-        break;
-      case "Enter":
-      case " ":
-        e.preventDefault();
-        selectIndex(highlight);
-        return;
-      case "Escape":
-      case "Tab":
-        setOpen(false);
-        return;
-      default:
-        return;
+  const onInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      moveHighlight(highlight + 1);
+      return;
     }
-    setHighlight(next);
-    scrollTo(next);
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      moveHighlight(highlight - 1);
+      return;
+    }
+    if (e.key === "Home") {
+      e.preventDefault();
+      moveHighlight(0);
+      return;
+    }
+    if (e.key === "End") {
+      e.preventDefault();
+      moveHighlight(visible.length - 1);
+      return;
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      selectIndex(highlight);
+      return;
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+      setQuery("");
+      triggerRef.current?.focus();
+      return;
+    }
+    if (e.key === "Tab" && !e.shiftKey) {
+      // allow natural tab, but close list so focus leaves cleanly
+      setOpen(false);
+    }
   };
 
   return (
@@ -127,11 +153,10 @@ export function CampaignSelect({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((s) => !s)}
-        onKeyDown={onKeyDown}
+        onKeyDown={onTriggerKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls="campaign-listbox"
-        aria-activedescendant={open && highlight > 0 ? `campaign-opt-${highlight}` : undefined}
         className="field flex items-center justify-between text-left"
       >
         <span className={value ? "text-[#0a0a0a]" : "text-neutral-500"}>
@@ -150,40 +175,63 @@ export function CampaignSelect({
 
       {/* Custom dropdown */}
       {open && (
-        <ul
+        <div
           id="campaign-listbox"
-          ref={listRef}
           role="listbox"
           aria-label="Campaigns"
-          className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-white/15 bg-[#121212] py-1 shadow-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-white/15 bg-[#121212] shadow-2xl"
         >
-          {all.map((opt, i) => {
-            const disabled = i === 0;
-            const selected = i > 0 && options[i - 1] === value;
-            return (
-              <li
-                key={opt + i}
-                id={`campaign-opt-${i}`}
-                data-index={i}
-                role="option"
-                aria-selected={selected}
-                aria-disabled={disabled}
-                onClick={() => selectIndex(i)}
-                className={`px-4 py-2 text-sm outline-none transition-colors ${
-                  disabled
-                    ? "pointer-events-none text-neutral-500"
-                    : selected
-                      ? "bg-accent/20 text-accent"
-                      : i === highlight
-                        ? "bg-white/10 text-white"
-                        : "text-white/80 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                {opt}
-              </li>
-            );
-          })}
-        </ul>
+          <div className="border-b border-white/10 p-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={onInputKeyDown}
+              placeholder="Search campaigns…"
+              aria-autocomplete="list"
+              aria-controls="campaign-options"
+              aria-activedescendant={
+                highlight >= 0 && visible[highlight]
+                  ? `campaign-opt-${visible[highlight].replace(/\s+/g, "-")}`
+                  : undefined
+              }
+              className="w-full rounded-md border border-white/10 bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder:text-neutral-500 outline-none focus:border-[#d8c9a3]/60 focus:ring-1 focus:ring-[#d8c9a3]/20"
+            />
+          </div>
+          <ul
+            ref={listRef}
+            id="campaign-options"
+            className="max-h-60 overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {visible.length === 0 ? (
+              <li className="px-4 py-3 text-sm text-neutral-500">No campaigns found</li>
+            ) : (
+              visible.map((opt, i) => {
+                const selected = opt === value;
+                return (
+                  <li
+                    key={opt}
+                    id={`campaign-opt-${opt.replace(/\s+/g, "-")}`}
+                    data-index={i}
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => selectIndex(i)}
+                    className={`px-4 py-2 text-sm outline-none transition-colors ${
+                      selected
+                        ? "bg-accent/20 text-accent"
+                        : i === highlight
+                          ? "bg-white/10 text-white"
+                          : "text-white/80 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {opt}
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </div>
       )}
     </div>
   );
