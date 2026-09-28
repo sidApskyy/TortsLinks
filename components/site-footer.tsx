@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import BlinkingDots from "./blinking-dots";
+import { SiteLogo } from "./site-logo";
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -112,11 +113,7 @@ export function SiteFooter() {
       <div className="relative mx-auto max-w-6xl px-5 pt-12 pb-28 lg:pb-12">
         <div className="grid gap-10 md:grid-cols-4">
           <motion.div {...rise(0)} className="md:col-span-2">
-            <a href="/" className="font-display text-2xl font-bold tracking-tight text-white">
-              <span className="footer-sheen">
-                Torts<span className="text-accent">Links</span>
-              </span>
-            </a>
+            <SiteLogo sheen className="text-white" />
             <p className="mt-4 max-w-sm text-sm text-white/60">
               Where Better Cases Begin With Better Acquisition.
             </p>
