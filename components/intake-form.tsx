@@ -319,7 +319,7 @@ export function IntakeForm({
         with this form.
       </p>
       <p className="mt-3 text-center text-[11px] leading-relaxed text-ink/45">
-        Attorney advertising. The Torts Attorney provides legal marketing and case-acquisition
+        Attorney advertising. TortsLinks provides legal marketing and case-acquisition
         services and is not a law firm. Submitting this form does not create an attorney-client
         relationship and does not guarantee review, acceptance, or any outcome. Prior results do not
         guarantee similar outcomes.
