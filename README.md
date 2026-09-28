@@ -1,6 +1,6 @@
 # TortLinks
 
-Standalone victim-intake lander for TortLinks, served at tortslink.com.
+Standalone victim-intake lander for TortLinks, served at https://www.tortlinks.com/.
 Separate from thetortsattorney.com — noindex, no links between the two.
 
 ## Stack
@@ -18,13 +18,13 @@ Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Framer Motion · Ser
 
 See `.env.example`. SMTP uses Hostinger (`smtp.hostinger.com:465`); if `RESEND_API_KEY` is
 set, Resend is used as a fallback transport. TrustedForm certs are claimed server-side via
-`TRUSTEDFORM_API_KEY`. Turnstile requires `tortslink.com` in the site's allowed hostnames.
+`TRUSTEDFORM_API_KEY`. Turnstile requires `tortlinks.com` and `www.tortlinks.com` in the site's allowed hostnames.
 
 ## Deploy (Render)
 
 - Build: `npm install && npm run build`
 - Start: `npm start`
-- Set all env vars from `.env.example` in the Render dashboard, then point tortslink.com at the service.
+- Set all env vars from `.env.example` in the Render dashboard, then point https://www.tortlinks.com/ at the service.
 
 ## URL params
 

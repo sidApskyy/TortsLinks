@@ -119,10 +119,10 @@ export function SiteFooter() {
             </p>
             <div className="mt-4 space-y-1 text-sm">
               <a
-                href="mailto:hello@tortslink.com"
+                href="mailto:hello@tortlinks.com"
                 className="footer-link inline-block text-white/70 hover:text-accent"
               >
-                hello@tortslink.com
+                hello@tortlinks.com
               </a>
               <a href="tel:3025868230" className="footer-link inline-block text-white/70 hover:text-accent">
                 3025868230

@@ -87,7 +87,7 @@ export function createIntakeDocImage(d: IntakeDocData): string {
   ctx.fillStyle = FAINT;
   ctx.textAlign = "right";
   ctx.fillText("C O N F I D E N T I A L", W - M, y - 8);
-  ctx.fillText("tortslink.com", W - M, y + 6);
+  ctx.fillText("tortlinks.com", W - M, y + 6);
   ctx.textAlign = "left";
 
   y += 18;

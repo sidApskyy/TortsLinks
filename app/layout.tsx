@@ -11,7 +11,7 @@ const instrument = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tortslink.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.tortlinks.com/"),
   title: "Free Case Review | TortLinks",
   description:
     "See if you may qualify for compensation. Free, confidential case review — takes about 2 minutes.",
