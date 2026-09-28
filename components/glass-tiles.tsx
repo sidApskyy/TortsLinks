@@ -27,10 +27,20 @@ export default function GlassTiles({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf = 0;
     let tiles: Tile[] = [];
+    let lastT = 0;
+    let lastW = 0;
+    let lastH = 0;
 
     const build = () => {
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
+
+      // ignore tiny oscillations during CSS accordion animations, but rebuild
+      // on real width changes or meaningful height changes
+      if (Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 24) return;
+      lastW = w;
+      lastH = h;
+
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.max(1, Math.round(w * dpr));
       canvas.height = Math.max(1, Math.round(h * dpr));
@@ -56,7 +66,8 @@ export default function GlassTiles({
           });
         }
       }
-      if (reduce) draw(0);
+      // redraw immediately so the canvas never sits blank after a resize
+      draw(lastT);
     };
 
     const roundRect = (x: number, y: number, s: number, r: number) => {
@@ -91,13 +102,13 @@ export default function GlassTiles({
           tile.x + tile.s,
           tile.y + tile.s
         );
-        const crest = 0.15 + lit * 0.7; // position of the hot gold band
+        const crest = 0.15 + lit * 0.7;
 
         g.addColorStop(0, "#0b0805");
-        g.addColorStop(Math.max(0, crest - 0.22), "#3d2410"); // bronze shadow
-        g.addColorStop(Math.max(0, crest - 0.08), "#8a5a20"); // heating bronze
-        g.addColorStop(crest, "#ffde8a"); // molten gold crest
-        g.addColorStop(Math.min(1, crest + 0.12), "#7a4a18"); // cooling trailing
+        g.addColorStop(Math.max(0, crest - 0.22), "#3d2410");
+        g.addColorStop(Math.max(0, crest - 0.08), "#8a5a20");
+        g.addColorStop(crest, "#ffde8a");
+        g.addColorStop(Math.min(1, crest + 0.12), "#7a4a18");
         g.addColorStop(Math.min(1, crest + 0.28), "#2a1a0a");
         g.addColorStop(1, "#0a0705");
 
@@ -105,12 +116,12 @@ export default function GlassTiles({
         ctx.fillStyle = g;
         ctx.fill();
 
-        // warm gold grid border, slightly brighter on hot tiles
+        // warm gold grid border
         ctx.lineWidth = 1.2;
         ctx.strokeStyle = `rgba(210,175,105,${0.12 + lit * 0.18})`;
         ctx.stroke();
 
-        // specular hot spot: an ellipse of brighter gold where the crest is brightest
+        // specular hot spot
         const spot = ctx.createRadialGradient(
           tile.x + tile.s * (crest + 0.05),
           tile.y + tile.s * (crest - 0.05),
@@ -123,13 +134,13 @@ export default function GlassTiles({
         spot.addColorStop(0.5, `rgba(255,210,130,${lit * 0.22})`);
         spot.addColorStop(1, "rgba(255,210,130,0)");
         ctx.fillStyle = spot;
-        // reuse the same rounded path for the hot spot so it stays inside the tile
         ctx.fill();
       }
     };
 
     const loop = (now: number) => {
-      draw(now * 0.001);
+      lastT = now * 0.001;
+      draw(lastT);
       raf = requestAnimationFrame(loop);
     };
 
@@ -143,7 +154,16 @@ export default function GlassTiles({
     });
     io.observe(canvas);
 
-    const ro = new ResizeObserver(build);
+    // schedule rebuilds on a single rAF to collapse multiple resize events
+    let pendingBuild = false;
+    const ro = new ResizeObserver(() => {
+      if (pendingBuild) return;
+      pendingBuild = true;
+      requestAnimationFrame(() => {
+        pendingBuild = false;
+        build();
+      });
+    });
     ro.observe(canvas);
     build();
 
