@@ -1,18 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 export default function UserCursor() {
-  const reduce = useReducedMotion();
   const fine = typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
   const [visible, setVisible] = useState(false);
   const [label, setLabel] = useState("");
-
-  const x = useMotionValue(-100);
-  const y = useMotionValue(-100);
-  const springX = useSpring(x, { stiffness: 1600, damping: 24, mass: 0.03 });
-  const springY = useSpring(y, { stiffness: 1600, damping: 24, mass: 0.03 });
+  const cursorRef = useRef<HTMLDivElement>(null);
 
   // read the first-name field live; only show the tag once it has a value
   useEffect(() => {
@@ -24,15 +18,30 @@ export default function UserCursor() {
     return () => input.removeEventListener("input", update);
   }, []);
 
-  // follow the mouse anywhere on the page
+  // follow the mouse directly — no React state, no spring interpolation,
+  // just a DOM style update inside requestAnimationFrame. This removes the
+  // per-frame React/Framer Motion overhead that causes the glitchy feel.
   useEffect(() => {
     if (!fine) return;
+    const el = cursorRef.current;
+    if (!el) return;
+
+    let ticking = false;
+    let pendingX = 0;
+    let pendingY = 0;
 
     const move = (e: MouseEvent) => {
-      x.set(e.clientX);
-      y.set(e.clientY);
+      pendingX = e.clientX;
+      pendingY = e.clientY;
       setVisible(true);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        el.style.transform = `translate3d(${pendingX}px, ${pendingY}px, 0)`;
+        ticking = false;
+      });
     };
+
     const leave = () => setVisible(false);
 
     window.addEventListener("mousemove", move);
@@ -42,15 +51,20 @@ export default function UserCursor() {
       window.removeEventListener("mousemove", move);
       window.removeEventListener("mouseleave", leave);
     };
-  }, [fine, x, y]);
+  }, [fine]);
 
-  if (!fine || !visible) return null;
+  if (!fine) return null;
 
   return (
-    <motion.div
+    <div
+      ref={cursorRef}
       aria-hidden="true"
       className="pointer-events-none fixed left-0 top-0 z-[100] will-change-transform"
-      style={{ x: reduce ? x : springX, y: reduce ? y : springY }}
+      style={{
+        opacity: visible ? 1 : 0,
+        transition: "opacity 0.15s ease",
+        transform: "translate3d(-100px, -100px, 0)",
+      }}
     >
       {/* pointer */}
       <svg
@@ -75,6 +89,6 @@ export default function UserCursor() {
           {label}
         </div>
       ) : null}
-    </motion.div>
+    </div>
   );
 }
