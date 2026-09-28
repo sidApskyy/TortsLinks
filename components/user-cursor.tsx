@@ -11,8 +11,8 @@ export default function UserCursor() {
 
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
-  const springX = useSpring(x, { stiffness: 900, damping: 28, mass: 0.08 });
-  const springY = useSpring(y, { stiffness: 900, damping: 28, mass: 0.08 });
+  const springX = useSpring(x, { stiffness: 1600, damping: 24, mass: 0.03 });
+  const springY = useSpring(y, { stiffness: 1600, damping: 24, mass: 0.03 });
 
   // read the first-name field live; only show the tag once it has a value
   useEffect(() => {
