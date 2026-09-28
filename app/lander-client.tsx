@@ -408,13 +408,8 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
       </section>
 
       {/* ── CAMPAIGN CARDS ──────────────────────────────── */}
-      <section id="campaigns" className="relative isolate scroll-mt-20 overflow-hidden border-t border-white/10 bg-[#0D0D0D] py-16 md:py-24">
-        <GlassTiles className="-z-10 opacity-70" />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-80 w-[60rem] max-w-[120vw] -translate-x-1/2 rounded-full bg-accent/[0.05] blur-3xl"
-        />
-        <div className="relative mx-auto max-w-5xl px-5 sm:px-6">
+      <section id="campaigns" className="scroll-mt-20 border-t border-white/10 bg-[#0D0D0D] py-16 md:py-24">
+        <div className="mx-auto max-w-5xl px-5 sm:px-6">
           <motion.span
             {...fadeUp}
             className="mb-4 block text-center text-sm font-semibold uppercase tracking-[0.15em] text-accent"
@@ -763,8 +758,9 @@ export function LanderClient({ initialCampaign }: { initialCampaign: string }) {
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────── */}
-      <section id="faq" className="scroll-mt-20 border-t border-white/10 py-16 md:py-24">
-        <div className="mx-auto max-w-2xl px-5 sm:px-6">
+      <section id="faq" className="relative isolate overflow-hidden scroll-mt-20 border-t border-white/10 bg-[#0a0a0a] py-16 md:py-24">
+        <GlassTiles className="-z-10 opacity-35" />
+        <div className="relative mx-auto max-w-2xl px-5 sm:px-6">
           <motion.span
             {...fadeUp}
             className="mb-4 block text-center text-sm font-semibold uppercase tracking-[0.15em] text-accent"
