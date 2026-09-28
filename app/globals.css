@@ -146,3 +146,17 @@ html {
 .field {
   @apply w-full cursor-none rounded-lg border border-white/15 bg-white px-4 py-2.5 text-base text-[#0a0a0a] placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d8c9a3]/60 focus:ring-2 focus:ring-[#d8c9a3]/20;
 }
+
+/* hide the system cursor on fine-pointer devices so the custom UserCursor is the
+   only pointer visible across the whole page */
+@media (pointer: fine) {
+  a,
+  button,
+  [role="button"],
+  input,
+  textarea,
+  select,
+  label {
+    cursor: none !important;
+  }
+}

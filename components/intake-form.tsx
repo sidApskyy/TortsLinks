@@ -12,7 +12,6 @@ import { TrustedFormScript } from "./trusted-form";
 import { LetterSend } from "./letter-send";
 import ArrowButton from "./arrow-button";
 import BlinkingDots from "./blinking-dots";
-import UserCursor from "./user-cursor";
 
 const initial: FormState = { ok: false };
 
@@ -68,7 +67,6 @@ export function IntakeForm({
   const [sealed, setSealed] = useState(false);
   const [letterGone, setLetterGone] = useState(false);
   const [submitted, setSubmitted] = useState({ name: "", campaign: "" });
-  const [firstName, setFirstName] = useState("");
 
   const selected = onCampaignChange ? campaign : localCampaign;
   const errorRef = useRef<HTMLParagraphElement>(null);
@@ -148,7 +146,7 @@ export function IntakeForm({
           ref={formRef}
           action={formAction}
           onSubmit={handleFormSubmit}
-          className="relative isolate cursor-none overflow-hidden rounded-2xl border border-white/10 bg-[#121212] p-5 shadow-2xl shadow-black/50 sm:p-8"
+          className="relative isolate overflow-hidden rounded-2xl border border-white/10 bg-[#121212] p-5 shadow-2xl shadow-black/50 sm:p-8"
         >
       <BlinkingDots spacing={28} meteors={false} className="-z-10 opacity-80" />
       <div
@@ -190,15 +188,7 @@ export function IntakeForm({
           <label htmlFor="firstName" className="mb-1.5 block text-sm font-semibold">
             First name
           </label>
-          <input
-            id="firstName"
-            name="firstName"
-            required
-            autoComplete="given-name"
-            className="field cursor-none"
-            value={firstName}
-            onChange={(e) => setFirstName(e.currentTarget.value)}
-          />
+          <input id="firstName" name="firstName" required autoComplete="given-name" className="field" />
         </div>
         <div>
           <label htmlFor="lastName" className="mb-1.5 block text-sm font-semibold">
@@ -335,7 +325,6 @@ export function IntakeForm({
         guarantee similar outcomes.
       </p>
         </form>
-        <UserCursor targetRef={formRef} name={firstName} />
       </div>
 
       {phase !== "form" && (

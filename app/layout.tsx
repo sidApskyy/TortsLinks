@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Instrument_Serif } from "next/font/google";
+import UserCursor from "@/components/user-cursor";
 import "./globals.css";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-body" });
@@ -37,7 +38,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${manrope.variable} ${instrument.variable}`}>
-      <body className="bg-paper font-sans text-ink antialiased">{children}</body>
+      <body className="cursor-none bg-paper font-sans text-ink antialiased">
+        <UserCursor />
+        {children}
+      </body>
     </html>
   );
 }

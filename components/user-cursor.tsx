@@ -2,57 +2,58 @@
 
 import { useEffect, useState } from "react";
 
-export default function UserCursor({
-  targetRef,
-  name,
-}: {
-  targetRef: React.RefObject<HTMLElement | null>;
-  name?: string;
-}) {
+export default function UserCursor() {
   const [pos, setPos] = useState({ x: -100, y: -100 });
   const [visible, setVisible] = useState(false);
   const [fine, setFine] = useState(false);
+  const [label, setLabel] = useState("Your name");
   const reduce =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // enable only on real pointer devices
   useEffect(() => {
     setFine(window.matchMedia("(pointer: fine)").matches);
   }, []);
 
+  // read the first-name field live, if it exists
   useEffect(() => {
-    const target = targetRef.current;
-    if (!target || !fine) return;
+    const input = document.getElementById("firstName") as HTMLInputElement | null;
+    if (!input) return;
+    const update = () => setLabel((input.value || "").trim() || "Your name");
+    update();
+    input.addEventListener("input", update);
+    return () => input.removeEventListener("input", update);
+  }, []);
+
+  // follow the mouse anywhere on the page
+  useEffect(() => {
+    if (!fine) return;
 
     const move = (e: MouseEvent) => {
       setPos({ x: e.clientX, y: e.clientY });
+      setVisible(true);
     };
-    const enter = () => setVisible(true);
     const leave = () => setVisible(false);
 
-    target.addEventListener("mouseenter", enter);
-    target.addEventListener("mouseleave", leave);
-    target.addEventListener("mousemove", move);
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseleave", leave);
 
     return () => {
-      target.removeEventListener("mouseenter", enter);
-      target.removeEventListener("mouseleave", leave);
-      target.removeEventListener("mousemove", move);
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseleave", leave);
     };
-  }, [targetRef, fine]);
+  }, [fine]);
 
   if (!fine || !visible) return null;
-
-  const label = (name || "").trim() || "Your name";
 
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed z-[100]"
+      className="pointer-events-none fixed left-0 top-0 z-[100] will-change-transform"
       style={{
-        left: pos.x,
-        top: pos.y,
-        transition: reduce ? undefined : "left 60ms linear, top 60ms linear",
+        transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
+        transition: reduce ? undefined : "transform 45ms linear",
       }}
     >
       {/* pointer */}
@@ -73,9 +74,7 @@ export default function UserCursor({
         />
       </svg>
       {/* name tag */}
-      <div
-        className="absolute left-5 top-4 whitespace-nowrap rounded-full border border-accent/40 bg-[#121210]/90 px-2.5 py-1 text-[11px] font-semibold text-accent shadow-lg backdrop-blur-sm"
-      >
+      <div className="absolute left-5 top-4 whitespace-nowrap rounded-full border border-accent/40 bg-[#121210]/90 px-2.5 py-1 text-[11px] font-semibold text-accent shadow-lg backdrop-blur-sm">
         {label}
       </div>
     </div>
