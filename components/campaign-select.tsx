@@ -132,7 +132,7 @@ export function CampaignSelect({
         aria-expanded={open}
         aria-controls="campaign-listbox"
         aria-activedescendant={open && highlight > 0 ? `campaign-opt-${highlight}` : undefined}
-        className="field flex cursor-none items-center justify-between text-left"
+        className="field flex items-center justify-between text-left"
       >
         <span className={value ? "text-[#0a0a0a]" : "text-neutral-500"}>
           {value || placeholder}
@@ -155,7 +155,7 @@ export function CampaignSelect({
           ref={listRef}
           role="listbox"
           aria-label="Campaigns"
-          className="absolute z-50 mt-1 max-h-60 w-full cursor-none overflow-auto rounded-lg border border-white/15 bg-[#121212] py-1 shadow-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-white/15 bg-[#121212] py-1 shadow-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {all.map((opt, i) => {
             const disabled = i === 0;
@@ -169,7 +169,7 @@ export function CampaignSelect({
                 aria-selected={selected}
                 aria-disabled={disabled}
                 onClick={() => selectIndex(i)}
-                className={`cursor-none px-4 py-2 text-sm outline-none transition-colors ${
+                className={`px-4 py-2 text-sm outline-none transition-colors ${
                   disabled
                     ? "pointer-events-none text-neutral-500"
                     : selected
