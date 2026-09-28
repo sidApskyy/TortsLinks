@@ -10,7 +10,7 @@ const hash = (a: number, b: number) => {
 type Tile = { x: number; y: number; s: number; r: number; cx: number; cy: number; jitter: number };
 
 export default function GlassTiles({
-  cell = 110,
+  cell = 120,
   className,
 }: {
   cell?: number;
@@ -37,11 +37,11 @@ export default function GlassTiles({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       tiles = [];
 
-      // smaller tiles on phones so a few still fit across
-      const c = w < 640 ? Math.max(64, cell * 0.62) : w < 1024 ? Math.max(80, cell * 0.8) : cell;
+      // fewer, larger tiles = fewer draw calls and smoother motion
+      const c = w < 640 ? Math.max(72, cell * 0.58) : w < 1024 ? Math.max(88, cell * 0.75) : cell;
       const gap = 5;
       const s = c - gap;
-      const r = Math.min(20, Math.max(10, s * 0.16));
+      const r = Math.min(18, Math.max(8, s * 0.12));
 
       for (let y = gap; y < h; y += c) {
         for (let x = gap; x < w; x += c) {
@@ -52,7 +52,7 @@ export default function GlassTiles({
             r,
             cx: x + s / 2,
             cy: y + s / 2,
-            jitter: hash(x, y) * 0.5,
+            jitter: hash(x, y) * Math.PI * 2,
           });
         }
       }
@@ -75,80 +75,56 @@ export default function GlassTiles({
       ctx.clearRect(0, 0, w, h);
 
       for (const tile of tiles) {
-        // sweeping diagonal light band — tiles along x+y=const light up together,
-        // and the crest moves as t changes, giving that flowing glass sheen
-        const wave = 0.5 + 0.5 * Math.sin(t * 0.55 - (tile.cx + tile.cy) * 0.012 + tile.jitter);
-        const lit = reduce ? 0.18 : Math.pow(wave, 3);
+        // molten flow: three sine waves at different frequencies so each tile's
+        // surface moves independently, like liquid metal cooling and re-heating
+        const f1 = Math.sin(t * 0.8 + tile.cx * 0.03 + tile.jitter);
+        const f2 = Math.sin(t * 1.2 + tile.cy * 0.04 - tile.jitter * 0.7);
+        const f3 = Math.sin(t * 0.5 + (tile.cx - tile.cy) * 0.02);
+        const flow = 0.5 + 0.5 * ((f1 + f2 + f3) / 3);
+        const lit = reduce ? 0.15 : Math.pow(flow, 2.2);
 
-        // --- tile body ---
+        // --- molten metal body ---
+        // diagonal gradient with a moving gold crest
+        const g = ctx.createLinearGradient(
+          tile.x,
+          tile.y,
+          tile.x + tile.s,
+          tile.y + tile.s
+        );
+        const crest = 0.15 + lit * 0.7; // position of the hot gold band
+
+        g.addColorStop(0, "#0b0805");
+        g.addColorStop(Math.max(0, crest - 0.22), "#3d2410"); // bronze shadow
+        g.addColorStop(Math.max(0, crest - 0.08), "#8a5a20"); // heating bronze
+        g.addColorStop(crest, "#ffde8a"); // molten gold crest
+        g.addColorStop(Math.min(1, crest + 0.12), "#7a4a18"); // cooling trailing
+        g.addColorStop(Math.min(1, crest + 0.28), "#2a1a0a");
+        g.addColorStop(1, "#0a0705");
+
         roundRect(tile.x, tile.y, tile.s, tile.r);
-        const bg = ctx.createLinearGradient(tile.x, tile.y, tile.x + tile.s, tile.y + tile.s);
-        bg.addColorStop(0, "rgba(26,22,18,1)");
-        bg.addColorStop(1, "rgba(10,9,7,1)");
-        ctx.fillStyle = bg;
+        ctx.fillStyle = g;
         ctx.fill();
 
-        // thin warm gold border
+        // warm gold grid border, slightly brighter on hot tiles
         ctx.lineWidth = 1.2;
-        ctx.strokeStyle = `rgba(200,170,110,${0.12 + lit * 0.15})`;
+        ctx.strokeStyle = `rgba(210,175,105,${0.12 + lit * 0.18})`;
         ctx.stroke();
 
-        // --- internal reflections ---
-        ctx.save();
-        roundRect(tile.x + 2, tile.y + 2, tile.s - 4, tile.r - 2);
-        ctx.clip();
-
-        // top-left arc sheen: the way light curls around the top-left of a glass block
-        const arc1 = ctx.createLinearGradient(tile.x, tile.y, tile.x + tile.s, tile.y + tile.s);
-        arc1.addColorStop(0, `rgba(255,240,195,${lit * 0.95})`);
-        arc1.addColorStop(0.35, `rgba(255,215,145,${lit * 0.35})`);
-        arc1.addColorStop(1, "rgba(255,210,130,0)");
-        ctx.strokeStyle = arc1;
-        ctx.lineWidth = 7;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(tile.x + tile.s * 0.12, tile.y + tile.r * 0.4);
-        ctx.quadraticCurveTo(
-          tile.x + tile.s * 0.45,
-          tile.y + tile.s * 0.35,
-          tile.x + tile.s - tile.r * 0.4,
-          tile.y + tile.s * 0.82
+        // specular hot spot: an ellipse of brighter gold where the crest is brightest
+        const spot = ctx.createRadialGradient(
+          tile.x + tile.s * (crest + 0.05),
+          tile.y + tile.s * (crest - 0.05),
+          0,
+          tile.x + tile.s * crest,
+          tile.y + tile.s * crest,
+          tile.s * 0.5
         );
-        ctx.stroke();
-
-        // bottom-right arc sheen: reflected light catching the opposite corner
-        const arc2 = ctx.createLinearGradient(tile.x + tile.s, tile.y + tile.s, tile.x, tile.y);
-        arc2.addColorStop(0, `rgba(255,220,155,${lit * 0.55})`);
-        arc2.addColorStop(0.45, `rgba(255,200,120,${lit * 0.18})`);
-        arc2.addColorStop(1, "rgba(255,210,130,0)");
-        ctx.strokeStyle = arc2;
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(tile.x + tile.r * 0.4, tile.y + tile.s * 0.18);
-        ctx.quadraticCurveTo(
-          tile.x + tile.s * 0.55,
-          tile.y + tile.s * 0.65,
-          tile.x + tile.s * 0.88,
-          tile.y + tile.s - tile.r * 0.4
-        );
-        ctx.stroke();
-
-        // central radial flare when the crest passes over
-        const rg = ctx.createRadialGradient(
-          tile.cx,
-          tile.cy,
-          4,
-          tile.cx,
-          tile.cy,
-          tile.s * 0.7
-        );
-        rg.addColorStop(0, `rgba(255,235,180,${lit * 0.45})`);
-        rg.addColorStop(0.55, `rgba(255,210,130,${lit * 0.14})`);
-        rg.addColorStop(1, "rgba(255,210,130,0)");
-        ctx.fillStyle = rg;
-        ctx.fillRect(tile.x, tile.y, tile.s, tile.s);
-
-        ctx.restore();
+        spot.addColorStop(0, `rgba(255,240,195,${lit * 0.65})`);
+        spot.addColorStop(0.5, `rgba(255,210,130,${lit * 0.22})`);
+        spot.addColorStop(1, "rgba(255,210,130,0)");
+        ctx.fillStyle = spot;
+        // reuse the same rounded path for the hot spot so it stays inside the tile
+        ctx.fill();
       }
     };
 
