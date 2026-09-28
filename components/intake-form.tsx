@@ -12,6 +12,7 @@ import { TrustedFormScript } from "./trusted-form";
 import { LetterSend } from "./letter-send";
 import ArrowButton from "./arrow-button";
 import BlinkingDots from "./blinking-dots";
+import { CampaignSelect } from "./campaign-select";
 
 const initial: FormState = { ok: false };
 
@@ -233,27 +234,16 @@ export function IntakeForm({
           <label htmlFor="campaign" className="mb-1.5 block text-sm font-semibold">
             Campaign or topic
           </label>
-          <select
+          <CampaignSelect
             id="campaign"
             name="campaign"
             required
             value={selected}
-            onChange={(e) =>
-              onCampaignChange ? onCampaignChange(e.target.value) : setLocalCampaign(e.target.value)
+            options={[...CAMPAIGNS.map((c) => c.name), OTHER_CAMPAIGN]}
+            onChange={(v) =>
+              onCampaignChange ? onCampaignChange(v) : setLocalCampaign(v)
             }
-            className="field"
-            data-tf-element-role="offer"
-          >
-            <option value="" disabled>
-              Select a campaign…
-            </option>
-            {CAMPAIGNS.map((c) => (
-              <option key={c.slug} value={c.name}>
-                {c.name}
-              </option>
-            ))}
-            <option value={OTHER_CAMPAIGN}>{OTHER_CAMPAIGN}</option>
-          </select>
+          />
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="description" className="mb-1.5 block text-sm font-semibold">
