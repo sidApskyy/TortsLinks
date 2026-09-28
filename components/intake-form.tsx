@@ -318,7 +318,7 @@ export function IntakeForm({
       </div>
 
       {phase !== "form" && (
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white/15 bg-[#121212]">
+        <div className="absolute inset-0 hidden overflow-hidden rounded-2xl border border-white/15 bg-[#121212] sm:block">
           <p className="sr-only" role="status">
             {state.ok
               ? "Your case review request has been submitted."
@@ -400,6 +400,78 @@ export function IntakeForm({
         </AnimatePresence>,
         document.body
       )}
+
+      {/* Mobile full-screen thank-you page */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {phase === "done" && (
+              <motion.div
+                key="mobile-thanks"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                role="status"
+                aria-live="polite"
+                className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-y-auto bg-[#0A0A0A] p-6 text-center sm:hidden"
+              >
+                <div className="mx-auto max-w-sm">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+                    className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-accent/30 bg-white/10"
+                  >
+                    <div className="absolute -inset-6 rounded-full bg-accent/15 blur-xl" aria-hidden="true" />
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="relative h-10 w-10 text-accent"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </motion.div>
+
+                  <h2 className="font-display text-3xl text-gradient">
+                    Request received{submitted.name ? `, ${submitted.name.split(" ")[0]}` : ""}
+                  </h2>
+
+                  <p className="mt-4 text-ink/70">
+                    Thank you. Your free case review
+                    {submitted.campaign ? (
+                      <>
+                        {" "}
+                        regarding <strong className="text-white">{submitted.campaign}</strong>
+                      </>
+                    ) : null}{" "}
+                    has been submitted. If your information appears to fit the current criteria, a case
+                    specialist may follow up by phone, text, or email.
+                  </p>
+
+                  <p className="mt-6 text-[11px] leading-relaxed text-ink/45">
+                    Attorney advertising. Submitting this form does not create an attorney-client
+                    relationship.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhase("form");
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#e8dfc9] to-[#d8c9a3] px-6 py-3 text-sm font-bold text-black shadow-lg"
+                  >
+                    Back to top
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
     </div>
   );
 }
